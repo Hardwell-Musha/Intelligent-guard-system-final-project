@@ -1,0 +1,56 @@
+.form-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 2rem;
+  }
+  
+  .file-input-container {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1rem;
+  }
+  
+  .link-container {
+    display: flex;
+    align-items: center;
+    margin-top: 1rem;
+  }
+  
+  .link-container label {
+    margin-right: 1rem;
+  }
+  .main {
+    background-color: rgb(0, 0, 0);
+  }
+  .file-button-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+  .blue-color {
+    color: #0310c0;
+  
+  }
+  .chat-box {
+    background-color: rgba(255, 255, 255, 0.9); /* Background color with opacity */
+    border: 1px solid #ccc; /* Add a border */
+    border-radius: 5px; /* Add border radius */
+    padding: 10px; /* Add padding */
+    margin-top: 20px; /* Add margin */
+    width: 80%; /* Set width */
+    margin: auto; /* Center horizontally */
+  }
+  .chat-box {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 300px; /* Adjust width as needed */
+    padding: 20px;
+    background-color: #f0f0f0;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  

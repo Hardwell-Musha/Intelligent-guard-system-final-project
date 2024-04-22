@@ -1,0 +1,76 @@
+.login-page {
+    display: flex; /* Use flexbox */
+    justify-content: center; /* Center the container horizontally */
+    align-items: center; /* Center the container vertically */
+    height: 100vh; /* Make the container full height of the viewport */
+  }
+  
+  .login-container {
+    width: 400px; /* Adjust width as desired */
+    height: 400px; /* Adjust height as desired */
+    padding: 20px;
+    border: 1px solid #1a0d37;
+    border-radius: 5px;
+    background-color: #ffffff;
+  }
+  
+  .form-group {
+    margin-bottom: 15px;
+  }
+  
+  label {
+    display: block;
+    font-weight: bold;
+  }
+  
+  .input-field {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+    margin-top: 5px;
+  }
+  
+  .submit-button,
+  .register-button {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: #153353;
+    color: #fff;
+    cursor: pointer;
+  }
+  
+  .submit-button:hover,
+  .register-button:hover {
+    background-color: #0056b3;
+  }
+  
+  .error-message {
+    color: red;
+    margin-top: 10px;
+  }
+  
+  .register-button {
+    margin-top: 10px;
+  }
+  .login-page {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  
+  }
+  
+  .welcome-text {
+    position: absolute;
+    top: 50px; /* Adjust the distance from the top */
+    color: white;
+    font-size: 50px;
+    text-align: center;
+    z-index: -1; /* Ensure the text is behind the container */
+  }
+  
