@@ -58,9 +58,9 @@ def upload_file():
         file.save(video_path)
 
         # Process video frames
-        processed_video_url, message = process_video(video_path)
+        processed_video_url, last_frame_url, processed_public_id, message = process_video(video_path)
 
-        return jsonify({'processed_video_url': processed_video_url, 'message': message}), 200
+        return jsonify({'processed_video_url': processed_video_url, 'last_frame_url': last_frame_url, 'processed_public_id': processed_public_id, 'message': message}), 200
 
     else:
         return jsonify({'error': 'Invalid file format. Please upload a .mp4 file'}), 400
@@ -80,12 +80,12 @@ def process_webcam():
     start_time = time.time()
     
     # Process video frames
-    processed_video_url, message = process_video(cap, processing_duration, start_time, frame_width, frame_height, frame_rate)
+    processed_video_url, last_frame_url, processed_public_id, message = process_video(cap, processing_duration, start_time, frame_width, frame_height, frame_rate)
 
     # Release the VideoCapture object
     cap.release()
 
-    return jsonify({'processed_video_url': processed_video_url, 'message': message}), 200
+    return jsonify({'processed_video_url': processed_video_url, 'last_frame_url': last_frame_url, 'processed_public_id': processed_public_id, 'message': message}), 200
 
 def process_video(video_source, processing_duration=None, start_time=None, input_width=None, input_height=None, frame_rate=None):
     if isinstance(video_source, str):
@@ -132,6 +132,7 @@ def process_video(video_source, processing_duration=None, start_time=None, input
 
     # Process video frames and perform detection
     frame_count = 0
+    last_frame_url = None  # Initialize last frame URL
     while True:
         ret, frame = cap.read()
         if not ret:
@@ -151,15 +152,12 @@ def process_video(video_source, processing_duration=None, start_time=None, input
 
         num_person_boxes = count_person_bounding_boxes(detections)
         num_weapon_boxes = count_weapon_bounding_boxes(detections)
-        print("Number of person bounding boxes in frame {}: {}".format(frame_count, num_person_boxes))
-        print("Number of weapon bounding boxes in frame {}: {}".format(frame_count, num_weapon_boxes))
 
         # Trigger alert function if weapons are detected
         alert_triggered = alert_function(num_weapon_boxes)
 
         # Track bounding boxes
         num_tracked_boxes = track_bounding_boxes(detections)
-        print("Number of tracked bounding boxes in frame {}: {}".format(frame_count, num_tracked_boxes))
 
         # Plot bounding boxes on the frame for persons
         res_plotted_person = detections[0].plot()
@@ -203,6 +201,11 @@ def process_video(video_source, processing_duration=None, start_time=None, input
         if processing_duration and time.time() - start_time > processing_duration:
             break
 
+    # Upload last processed frame to Cloudinary
+    last_frame_path = os.path.join(frame_folder, f"frame_{frame_count - 1}.jpg")
+    cloudinary_response_frame = upload(last_frame_path, resource_type="image")
+    last_frame_url = cloudinary_response_frame['secure_url']
+
     # Release the VideoCapture object if it's a file
     if video_type == 'file':
         cap.release()
@@ -219,8 +222,8 @@ def process_video(video_source, processing_duration=None, start_time=None, input
 
     # Get URL for the processed video from Cloudinary response
     processed_video_url = cloudinary_response['secure_url']
-
-    return processed_video_url, 'Video processed successfully'
+    processed_public_id = cloudinary_response['public_id']
+    return processed_video_url, last_frame_url, processed_public_id, 'Video processed successfully'
 
 from flask import send_file
 from flask import send_file
