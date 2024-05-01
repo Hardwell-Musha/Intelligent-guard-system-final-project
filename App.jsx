@@ -7,7 +7,8 @@ import './App.css';
 import './button.css';
 import './container.css';
 import auth from './firebase/firebase';
-import ChatBox from './ChatBox'; // Import the ChatBox component
+import ChatBox from './ChatBox';
+import FrameViewer from './FrameViewer';
 
 const cloudinary = new Cloudinary({
   cloud: {
@@ -21,10 +22,6 @@ function App() {
   const [processing, setProcessing] = useState(false);
   const [processedVideoPublicId, setProcessedVideoPublicId] = useState('');
   const [videoLink, setVideoLink] = useState('');
-
-  const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
-  };
 
   const handleChange = (e) => {
     setVideoLink(e.target.value);
@@ -40,7 +37,8 @@ function App() {
           'Content-Type': 'multipart/form-data'
         }
       });
-      setProcessedVideoPublicId(response.data.processed_video_url);
+      // Set the processed video public ID received from the backend response
+      setProcessedVideoPublicId(response.data.processed_public_id);
     } catch (error) {
       console.error('Error uploading file:', error);
     } finally {
@@ -60,11 +58,15 @@ function App() {
       console.error('Error processing webcam:', error);
     }
   };
+  
+  const handleFileChange = (e) => {
+    setFile(e.target.files[0]);
+  };
 
   const handleDownloadVideo = async () => {
     try {
       const response = await axios.get('http://localhost:5000/video', {
-        responseType: 'blob', // Important: responseType as 'blob' for binary data
+        responseType: 'blob',
       });
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
@@ -86,46 +88,47 @@ function App() {
 
   return (
     <main className="main">
-      <div className="container">
-        <h1 className="title blue-color">Intelligent Guard AI Surveillance System</h1>
+      <div className="vertical-container">
+        <h1 className="title white-colour">INTELLIGENT GUARD AI SURVEILLANCE SYSTEM</h1>
         <div className="form-container">
-          <div className="file-input-container">
-            <div className="file-button-container">
-              <label htmlFor="video-file" style={{ color: 'white' }}>Choose a video file</label>
-              <input type="file" accept="video/mp4" id="video-file" onChange={handleFileChange} />
-              <button onClick={handleUpload} disabled={!file || processing} className="upload-button">
-                {processing ? 'Processing...' : 'Upload Video'}
-              </button>
-            </div>
-            <div className="link-container">
-              <label htmlFor="video-link" style={{ color: 'white' }}>paste a video link:</label>
-              <input type="text" id="video-link" value={videoLink} onChange={handleChange} placeholder="Paste Video Link" style={{ marginRight: '1rem' }} />
-              <button onClick={handlePasteLink} className="play-button">Play Video</button>
-            </div>
+          <div className="button-container">
+            <label htmlFor="video-file" style={{ color: 'white' }}>Choose a video file</label>
+            <input type="file" accept="video/mp4" id="video-file" onChange={handleFileChange} />
+            <button onClick={handleUpload} disabled={!file || processing} className="upload-button" style={{ width: '150px', height: '40px', fontSize: '15px' }}>
+              {processing ? 'Processing...' : 'Upload Video'}
+            </button>
+          </div>
+          <div className="button-container">
+            <label htmlFor="video-link" style={{ color: 'white', fontSize: '15px' }}>Paste a video link:</label>
+            <input type="text" id="video-link" value={videoLink} onChange={handleChange} placeholder="Paste Video Link" style={{ marginRight: '1rem', width: '150px', height: '15px', fontSize: '8px' }} />
+            <button onClick={handlePasteLink} className="play-button" style={{ width: '150px', height: '40px', fontSize: '15px' }}>Play Video</button>
           </div>
           {processedVideoPublicId && (
-            <>
-              <button onClick={handleDownloadVideo} className="download-button" style={{ marginBottom: '1rem' }}>Download Processed Video</button>
-            </>
+            <div className="button-container">
+              <button onClick={handleDownloadVideo} className="download-button" style={{ width: '230px', height: '40px', fontSize: '15px' }}>Download Processed Video</button>
+            </div>
           )}
-          <button onClick={handleCameraDetection} className="camera-detection-button">Turn On Camera</button>
-          <div style={{ marginTop: '10px', textAlign: 'right' }}>
-            <button onClick={handleLogout} className="logout-button" style={{ backgroundColor: 'red' }}>Logout</button>
+          <div className="button-container">
+            <button onClick={handleCameraDetection} className="camera-detection-button" style={{ width: '150px', height: '40px', fontSize: '15px' }}>Turn On Camera</button>
+          </div>
+          <div style={{ position: 'absolute', top: 15, right: 10, marginTop: '15px', marginRight: '15px' }}>
+            <button onClick={handleLogout} className="logout-button" style={{ backgroundColor: 'red', width: '100px', height: '40px', fontSize: '14px' }}>Logout</button>
           </div>
         </div>
+        <FrameViewer />
+        {processedVideoPublicId && (
+          <div className="video-container">
+            <AdvancedVideo
+              cldVid={cloudinary.video(processedVideoPublicId)}
+              width='57%'
+              height='60%'
+              controls
+              key={processedVideoPublicId}
+            />
+          </div>
+        )}
       </div>
-      <ChatBox /> {/* Add the ChatBox component here */}
-      {processedVideoPublicId && (
-        <div className="video-container" style={{ marginTop: '20px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-          <AdvancedVideo
-            cldVid={cloudinary.video(processedVideoPublicId)}
-            width='50%'
-            height='50%'
-            controls
-            key={processedVideoPublicId} // Add key to force re-render when video changes
-          />
-        </div>
-      )}
+      <ChatBox />
     </main>
   );
 }
