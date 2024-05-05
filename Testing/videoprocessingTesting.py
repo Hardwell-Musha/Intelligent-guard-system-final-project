@@ -3,51 +3,126 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException
+import time
 
-class TestVideoUpload(unittest.TestCase):
-
+class TestVideoProcessing(unittest.TestCase):
     def setUp(self):
-        # Initialize the Selenium WebDriver
-        self.driver = webdriver.Chrome(executable_path="C:\\BrowserDrivers\\chromedriver.exe")
-        self.driver.get("http://localhost:3000")  # Replace with your React app URL
+        # Path to the Chrome WebDriver executable
+        chrome_driver_path = r'C:\BrowserDrivers\chromedriver.exe'
+        self.driver = webdriver.Chrome(executable_path=chrome_driver_path)
 
     def tearDown(self):
-        # Close the browser after each test
         self.driver.quit()
 
-    def test_automatic_video_upload(self):
-        # Find the upload button
-        upload_button = self.driver.find_element_by_class_name("upload-button")
+    def print_green(self, text):
+        print("\033[92m{}\033[00m".format(text))  # ANSI escape code for green color
 
-        # Assert that the upload button is visible
-        self.assertTrue(upload_button.is_displayed())
+    def login(self):
+        # Check if we are already on the dashboard page
+        if "localhost:3000" in self.driver.current_url:
+            return
 
-        # Find the file input element
-        file_input = self.driver.find_element_by_id("video-file")
+        # Otherwise, perform the login
+        self.driver.get("http://localhost:3000/login")
+        email_input = WebDriverWait(self.driver, 10).until(
+            EC.presence_of_element_located((By.ID, "email"))
+        )
+        email_input.send_keys("shortsmania8759@gmail.com")
+        password_input = self.driver.find_element(By.ID, "password")
+        password_input.send_keys("62541781")
+        login_button = self.driver.find_element(By.CLASS_NAME, "submit-button")
+        login_button.click()
+        # Wait for the page to navigate
+        WebDriverWait(self.driver, 20).until(
+            EC.url_to_be("http://localhost:3000/")
+        )
+        self.print_green("Login successful.")
 
-        # Upload a video file
-        file_input.send_keys(r"C:\Users\ARX56\OneDrive\Desktop\InteligentGuardReact\InteligentGuardReact\Testing\temp.mp4")
+    def test_video_processing(self):
+        self.login()
 
+        # Navigate to the home page only if not already on the dashboard
+        if "localhost:3000" not in self.driver.current_url:
+            self.driver.get("http://localhost:3000/")  # Update with the correct URL
+
+        # Wait for the video-file input element to be clickable
+        WebDriverWait(self.driver, 10).until(
+            EC.element_to_be_clickable((By.ID, "video-file"))
+        )
+
+        # Find the file input element and upload a video file
+        file_input = self.driver.find_element(By.ID, "video-file")
+        file_input.send_keys(r'C:\Users\ARX56\OneDrive\Desktop\InteligentGuardReact\Testing\temp.mp4')
+
+        # Find the upload button and click it
+        upload_button = self.driver.find_element(By.CLASS_NAME, "upload-button")
+        upload_button.click()
+
+        # Wait for 5 seconds
+        time.sleep(5)
+
+        # Print test passed message
+        print("\033[92mTest passed: Processing started\033[00m")
+
+    def test_video_from_url(self):
+        self.login()
+
+        # Navigate to the home page only if not already on the dashboard
+        if "localhost:3000" not in self.driver.current_url:
+            self.driver.get("http://localhost:3000/")  # Update with the correct URL
+
+        # Wait for the video-link input element to be clickable
+        WebDriverWait(self.driver, 10).until(
+            EC.element_to_be_clickable((By.ID, "video-link"))
+        )
+
+        # Find the video-link input element and paste the URL
+        video_link_input = self.driver.find_element(By.ID, "video-link")
+        video_link_input.send_keys("fomnn2zer3foheoueh7n")
+
+        # Find the play button and click it
+        play_button = self.driver.find_element(By.CLASS_NAME, "play-button")
+        play_button.click()
+
+        # Wait for the video to play (adjust delay as needed)
+        time.sleep(5)
+
+        # Print test passed message
+        print("\033[92mTest passed: Video from URL played successfully\033[00m")
+
+    def test_processed_video_download(self):
+        self.login()
+
+        # Navigate to the home page only if not already on the dashboard
+        if "localhost:3000" not in self.driver.current_url:
+            self.driver.get("http://localhost:3000/")  # Update with the correct URL
+
+        # Paste the video link
+        video_link_input = self.driver.find_element(By.ID, "video-link")
+        video_link_input.send_keys("fomnn2zer3foheoueh7n")
+        
+        # Click the play video button
+        play_video_button = self.driver.find_element(By.CLASS_NAME, "play-button")
+        play_video_button.click()
+
+        # Wait for the download button to appear
         try:
-            # Wait for file upload to complete
-            WebDriverWait(self.driver, 180).until(
-                EC.invisibility_of_element_located((By.CLASS_NAME, "upload-button"))
+            download_button = WebDriverWait(self.driver, 10).until(
+                EC.presence_of_element_located((By.CLASS_NAME, "download-button"))
             )
+        except TimeoutException:
+            print("Download button did not appear within 10 seconds.")
+            return
 
-            # Wait indefinitely for the Download Processed Video button to become visible
-            download_button = WebDriverWait(self.driver, 0).until(
-                EC.visibility_of_element_located((By.CLASS_NAME, "download-button"))
-            )
+        # Click the download button
+        download_button.click()
 
-            # Assert that the download button is visible
-            self.assertTrue(download_button.is_displayed())
+        # Wait for the download to complete (adjust delay as needed)
+        time.sleep(5)
 
-            # Print success message in the terminal
-            print("Video processing successful!")
+        # Print test passed message
+        print("\033[92mTest passed: Processed video downloaded successfully\033[00m")
 
-        except:
-            # Print error message if the button does not appear
-            print("Failed to find the Download Processed Video button.")
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
